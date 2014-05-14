@@ -32,7 +32,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 
-public class MainActivity extends ActionBarActivity implements LocationListener {
+public class MainActivity extends ActionBarActivity {
 
     private LocationManager locationManager;
     private TextView infoOut;
@@ -84,7 +84,10 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
 
         // Initialize the location fields
         if (location != null) {
-            onLocationChanged(location);
+            updateLocation(location);
+
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
+
         } else {
             infoOut.setText("Location not available");
         }
@@ -169,9 +172,34 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
         return super.onOptionsItemSelected(item);
     }
 
+    private final LocationListener locationListener = new LocationListener() {
 
-    @Override
-    public void onLocationChanged(Location location) {
+        public void onLocationChanged(Location location) {
+
+            updateLocation(location);
+
+        }
+
+        public void onProviderDisabled(String provider){
+
+            updateLocation(null);
+
+            Log.i(TAG, "Provider now is disabled..");
+
+        }
+
+        public void onProviderEnabled(String provider){
+
+            Log.i(TAG, "Provider now is enabled..");
+
+        }
+
+        public void onStatusChanged(String provider, int status,Bundle extras){ }
+
+    };
+
+
+    public void updateLocation(Location location) {
         Double lati = location.getLatitude();
         Double loit = location.getLongitude();
         SimpleDateFormat s = new SimpleDateFormat("yyMMddHHmmss");
@@ -183,24 +211,5 @@ public class MainActivity extends ActionBarActivity implements LocationListener 
 
         String str = "Latitude: "+lati+"\nLongitude: "+loit+"\nimei: "+imei;
         infoOut.setText(str);
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-        Toast.makeText(this, "Enabled new provider " + provider,
-                Toast.LENGTH_SHORT).show();
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        Toast.makeText(this, "Disabled provider " + provider,
-                Toast.LENGTH_SHORT).show();
     }
 }
