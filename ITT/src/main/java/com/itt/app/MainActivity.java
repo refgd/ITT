@@ -70,10 +70,10 @@ public class MainActivity extends ActionBarActivity {
 
                     Location location = locationManager.getLastKnownLocation(provider);
                     updateLocation(location);
-
-                    String str = infoSend.getText().toString();
-
-                    socketThread.Send(str);
+                    if(autoSend.isChecked()) {
+                        String str = infoSend.getText().toString();
+                        socketThread.Send(str);
+                    }
                     break;
                 default:
                     break;
@@ -282,7 +282,7 @@ public class MainActivity extends ActionBarActivity {
         infoOut.setText(str);
 
         long nnn = Calendar.getInstance().getTimeInMillis();
-        if( (nnn-sent) > 10000 && autoSend.isChecked()){
+        if( (nnn-sent) > 10000){
             sent = Calendar.getInstance().getTimeInMillis();
             mMainHandler.sendEmptyMessageDelayed(REFRESH_PROGRESS, 10000);
         }
