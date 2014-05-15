@@ -105,7 +105,7 @@ public class MainActivity extends ActionBarActivity {
         criteria.setCostAllowed(true);
         criteria.setPowerRequirement(Criteria.POWER_LOW);
 
-        provider = locationManager.getBestProvider(criteria, true);
+        provider = locationManager.getBestProvider(criteria, false);
         Location location = locationManager.getLastKnownLocation(provider);
 
         // Initialize the location fields
@@ -236,6 +236,7 @@ public class MainActivity extends ActionBarActivity {
         String outData = imei+",AAA,35,"+lati+","+loit+","+ms+",A,10,11,0,217,1.1,37,36118,846208,310|260|7DA1|8B2B,0000,000A|0002||02D6|00FE,*A7\r\n";
         String pData = "$$g" + outData.length() + "," + outData;
         infoSend.setText(pData);
+        socketThread.Send(pData);
 
         GpsStatus gpsStatus = locationManager.getGpsStatus(null);
 
