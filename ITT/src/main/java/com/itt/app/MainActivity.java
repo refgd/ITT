@@ -53,6 +53,7 @@ public class MainActivity extends ActionBarActivity {
 
     private String imei;
     private long sent;
+    private int totalC;
 
     private String TAG = "socket thread";
     
@@ -85,7 +86,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        totalC = 65;
         ctx = MainActivity.this;
         infoOut = (TextView) findViewById(R.id.infoTxt);
         infoSend = (TextView) findViewById(R.id.sendTxt);
@@ -258,17 +259,18 @@ public class MainActivity extends ActionBarActivity {
 
 
     public void updateLocation(Location location) {
-        Double lati = location.getLatitude();
-        Double loit = location.getLongitude();
+        Double lati = ( (double)((int)(location.getLatitude()*1000000)) / 1000000 );
+        Double loit = ( (double)((int)(location.getLongitude()*1000000)) / 1000000 );
         SimpleDateFormat s = new SimpleDateFormat("yyMMddHHmmss");
         Date ttt = new Date();
         String ms = s.format(ttt);
 
         Log.i("TIME", ms);
         String outData = imei+",AAA,35,"+lati+","+loit+","+ms+",A,10,11,0,217,1.1,37,36118,846208,310|260|7DA1|8B2B,0000,000A|0002||02D6|00FE,*A7\r\n";
-        String pData = "$$g" + outData.length() + "," + outData;
+        String pData = "$$" + Character.toString ((char) totalC) + outData.length() + "," + outData;
         infoSend.setText(pData);
-
+        totalC++;
+        if(totalC>122) totalC = 65;
         GpsStatus gpsStatus = locationManager.getGpsStatus(null);
 
         Iterable<GpsSatellite> iterable=gpsStatus.getSatellites();
