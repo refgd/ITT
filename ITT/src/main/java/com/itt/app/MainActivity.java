@@ -38,6 +38,8 @@ import java.util.Iterator;
 
 public class MainActivity extends ActionBarActivity {
 
+    private static final int REFRESH_PROGRESS = 1;
+
     private LocationManager locationManager;
     private TextView infoOut;
     private TextView infoSend;
@@ -54,6 +56,20 @@ public class MainActivity extends ActionBarActivity {
     Handler mhandler;
     Handler mhandlerSend;
     private Context ctx;
+
+    private Handler mMainHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case REFRESH_PROGRESS:
+                    Location location = locationManager.getLastKnownLocation(provider);
+                    updateLocation(location);
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,18 +99,26 @@ public class MainActivity extends ActionBarActivity {
         // Define the criteria how to select the locatioin provider -> use
         // default
         Criteria criteria = new Criteria();
-        provider = locationManager.getBestProvider(criteria, false);
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setAltitudeRequired(false);
+        criteria.setBearingRequired(false);
+        criteria.setCostAllowed(true);
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
+
+        provider = locationManager.getBestProvider(criteria, true);
         Location location = locationManager.getLastKnownLocation(provider);
 
         // Initialize the location fields
         if (location != null) {
             updateLocation(location);
 
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 1, locationListener);
+
 
         } else {
             infoOut.setText("Location not available");
         }
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100 * 1000, 500, locationListener);
 
         mhandler = new Handler() {
             @Override
@@ -228,5 +252,7 @@ public class MainActivity extends ActionBarActivity {
 
         String str = "imei: "+imei+"\nLatitude: "+lati+"\nLongitude: "+loit+"\nDate: "+ms+"\n# of S: "+count+"\nCell signal: "+""+"\nspeed: "+"";
         infoOut.setText(str);
+
+        mMainHandler.sendEmptyMessageDelayed(REFRESH_PROGRESS, 10000);
     }
 }
