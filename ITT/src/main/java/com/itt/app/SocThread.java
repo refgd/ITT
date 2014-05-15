@@ -16,8 +16,8 @@ import android.os.Message;
 import android.util.Log;
 
 public class SocThread extends Thread {
-    //private String ip = "50.195.116.150";
-    private String ip = "131.125.78.63";
+    private String ip = "50.195.116.150";
+    //private String ip = "131.125.78.63";
     private int port = 8500;
     private String TAG = "socket thread";
     private int timeout = 10000;

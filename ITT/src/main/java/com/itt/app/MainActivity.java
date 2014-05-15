@@ -163,6 +163,8 @@ public class MainActivity extends ActionBarActivity {
                     } else {
                         Log.i(TAG, "ME: " + s + "\nsend fail");
                         infoLog.append("\nsend fail");
+                        socketThread.close();
+                        startSocket();
                     }
                 } catch (Exception ee) {
                     Log.i(TAG, "loading error");
@@ -181,7 +183,7 @@ public class MainActivity extends ActionBarActivity {
                 //Log.i(TAG, "Sending data");
                 Location location = locationManager.getLastKnownLocation(provider);
                 updateLocation(location);
-                
+
                 String str = infoSend.getText().toString();
 
                 socketThread.Send(str);
