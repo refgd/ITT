@@ -19,6 +19,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,11 +46,13 @@ public class MainActivity extends ActionBarActivity {
     private TextView infoOut;
     private TextView infoSend;
     private TextView infoRecv;
+    private TextView infoLog;
+    private Switch autoSend;
 
     private String provider;
 
     private String imei;
-    private Boolean sent;
+    private long sent;
 
     private String TAG = "socket thread";
     
@@ -63,14 +67,13 @@ public class MainActivity extends ActionBarActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case REFRESH_PROGRESS:
+
                     Location location = locationManager.getLastKnownLocation(provider);
                     updateLocation(location);
 
                     String str = infoSend.getText().toString();
 
                     socketThread.Send(str);
-
-                    sent = true;
                     break;
                 default:
                     break;
@@ -84,10 +87,11 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         ctx = MainActivity.this;
-        sent = true;
         infoOut = (TextView) findViewById(R.id.infoTxt);
         infoSend = (TextView) findViewById(R.id.sendTxt);
         infoRecv = (TextView) findViewById(R.id.respTxt);
+        infoLog = (TextView) findViewById(R.id.textView);
+        autoSend = (Switch) findViewById(R.id.autoSend);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         TelephonyManager mngr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
@@ -155,11 +159,14 @@ public class MainActivity extends ActionBarActivity {
                     String s = msg.obj.toString();
                     if (msg.what == 1) {
                         Log.i(TAG, "ME: " + s + "\nsend success");
+                        //infoLog.append("\nsend success");
                     } else {
                         Log.i(TAG, "ME: " + s + "\nsend fail");
+                        infoLog.append("\nsend fail");
                     }
                 } catch (Exception ee) {
                     Log.i(TAG, "loading error");
+                    infoLog.append("\nloading error");
                     ee.printStackTrace();
                 }
             }
@@ -177,6 +184,18 @@ public class MainActivity extends ActionBarActivity {
 
                 socketThread.Send(str);
 
+            }
+        });
+
+        autoSend.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    Location location = locationManager.getLastKnownLocation(provider);
+                    if (location != null) {
+                        updateLocation(location);
+                    }
+                } else {
+                }
             }
         });
 
@@ -238,7 +257,9 @@ public class MainActivity extends ActionBarActivity {
         Double lati = location.getLatitude();
         Double loit = location.getLongitude();
         SimpleDateFormat s = new SimpleDateFormat("yyMMddHHmmss");
-        String ms = s.format(new Date());
+        Date ttt = new Date();
+        String ms = s.format(ttt);
+
         Log.i("TIME", ms);
         String outData = imei+",AAA,35,"+lati+","+loit+","+ms+",A,10,11,0,217,1.1,37,36118,846208,310|260|7DA1|8B2B,0000,000A|0002||02D6|00FE,*A7\r\n";
         String pData = "$$g" + outData.length() + "," + outData;
@@ -260,9 +281,10 @@ public class MainActivity extends ActionBarActivity {
         String str = "imei: "+imei+"\nLatitude: "+lati+"\nLongitude: "+loit+"\nDate: "+ms+"\n# of S: "+count+"\nCell signal: "+""+"\nspeed: "+"";
         infoOut.setText(str);
 
-        if(sent){
+        long nnn = Calendar.getInstance().getTimeInMillis();
+        if( (nnn-sent) > 10000 && autoSend.isChecked()){
+            sent = Calendar.getInstance().getTimeInMillis();
             mMainHandler.sendEmptyMessageDelayed(REFRESH_PROGRESS, 10000);
-            sent = false;
         }
     }
 }
