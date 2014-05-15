@@ -11,21 +11,18 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="GPS"
         android:id="@+id/infoTxt"
         android:layout_below="@+id/btn_send"
-        android:layout_alignRight="@+id/sendTxt"
-        android:layout_alignEnd="@+id/sendTxt" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"  />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Send"
         android:id="@+id/btn_send"
-        android:layout_alignParentTop="true"
-        android:layout_alignLeft="@+id/infoTxt"
-        android:layout_alignStart="@+id/infoTxt" />
+        android:layout_alignParentTop="true"/>
 
     <TextView
         android:layout_width="wrap_content"
