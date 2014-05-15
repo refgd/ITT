@@ -48,6 +48,7 @@ public class MainActivity extends ActionBarActivity {
     private String provider;
 
     private String imei;
+    private Boolean sent;
 
     private String TAG = "socket thread";
     
@@ -69,7 +70,7 @@ public class MainActivity extends ActionBarActivity {
 
                     socketThread.Send(str);
 
-                    mMainHandler.sendEmptyMessageDelayed(REFRESH_PROGRESS, 10000);
+                    sent = true;
                     break;
                 default:
                     break;
@@ -83,7 +84,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         ctx = MainActivity.this;
-
+        sent = true;
         infoOut = (TextView) findViewById(R.id.infoTxt);
         infoSend = (TextView) findViewById(R.id.sendTxt);
         infoRecv = (TextView) findViewById(R.id.respTxt);
@@ -125,8 +126,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100 * 1000, 500, locationListener);
-        mMainHandler.sendEmptyMessageDelayed(REFRESH_PROGRESS, 10000);
-        
+
         mhandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -259,5 +259,10 @@ public class MainActivity extends ActionBarActivity {
 
         String str = "imei: "+imei+"\nLatitude: "+lati+"\nLongitude: "+loit+"\nDate: "+ms+"\n# of S: "+count+"\nCell signal: "+""+"\nspeed: "+"";
         infoOut.setText(str);
+
+        if(sent){
+            mMainHandler.sendEmptyMessageDelayed(REFRESH_PROGRESS, 10000);
+            sent = false;
+        }
     }
 }
