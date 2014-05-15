@@ -3,6 +3,8 @@ package com.itt.app;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Criteria;
+import android.location.GpsSatellite;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -28,8 +30,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -86,7 +90,7 @@ public class MainActivity extends ActionBarActivity {
         if (location != null) {
             updateLocation(location);
 
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 1, locationListener);
 
         } else {
             infoOut.setText("Location not available");
@@ -209,7 +213,20 @@ public class MainActivity extends ActionBarActivity {
         String pData = "$$g" + outData.length() + "," + outData;
         infoSend.setText(pData);
 
-        String str = "Latitude: "+lati+"\nLongitude: "+loit+"\nimei: "+imei;
+        GpsStatus gpsStatus = locationManager.getGpsStatus(null);
+
+        Iterable<GpsSatellite> iterable=gpsStatus.getSatellites();
+        Iterator<GpsSatellite> itrator=iterable.iterator();
+        ArrayList<GpsSatellite> satelliteList=new ArrayList<GpsSatellite>();
+        int count=0;
+        int maxSatellites=gpsStatus.getMaxSatellites();
+        while (itrator.hasNext() && count <= maxSatellites) {
+            GpsSatellite satellite = itrator.next();
+            satelliteList.add(satellite);
+            count++;
+        }
+
+        String str = "imei: "+imei+"\nLatitude: "+lati+"\nLongitude: "+loit+"\nDate: "+ms+"\n# of S: "+count+"\nCell signal: "+""+"\nspeed: "+"";
         infoOut.setText(str);
     }
 }
