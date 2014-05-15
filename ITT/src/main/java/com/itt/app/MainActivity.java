@@ -68,6 +68,8 @@ public class MainActivity extends ActionBarActivity {
                     String str = infoSend.getText().toString();
 
                     socketThread.Send(str);
+
+                    mMainHandler.sendEmptyMessageDelayed(REFRESH_PROGRESS, 10000);
                     break;
                 default:
                     break;
@@ -123,7 +125,8 @@ public class MainActivity extends ActionBarActivity {
         }
 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100 * 1000, 500, locationListener);
-
+        mMainHandler.sendEmptyMessageDelayed(REFRESH_PROGRESS, 10000);
+        
         mhandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -256,7 +259,5 @@ public class MainActivity extends ActionBarActivity {
 
         String str = "imei: "+imei+"\nLatitude: "+lati+"\nLongitude: "+loit+"\nDate: "+ms+"\n# of S: "+count+"\nCell signal: "+""+"\nspeed: "+"";
         infoOut.setText(str);
-
-        mMainHandler.sendEmptyMessageDelayed(REFRESH_PROGRESS, 10000);
     }
 }
