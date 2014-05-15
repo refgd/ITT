@@ -179,7 +179,9 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onClick(final View v) {
                 //Log.i(TAG, "Sending data");
-
+                Location location = locationManager.getLastKnownLocation(provider);
+                updateLocation(location);
+                
                 String str = infoSend.getText().toString();
 
                 socketThread.Send(str);
