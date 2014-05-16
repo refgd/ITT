@@ -1,7 +1,7 @@
 package com.itt.app;
 /*
     Author: Jack Conway
-    Version: 0.1
+    Version: 0.1.1
  */
 
 import android.content.Context;
