@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -56,8 +57,10 @@ public class MainActivity extends ActionBarActivity {
     private String provider;
 
     private String imei;
+    private String satelliteInfo;
     private long sent;
     private int totalC;
+    private int numSal;
 
     private String TAG = "socket thread";
     
@@ -65,6 +68,7 @@ public class MainActivity extends ActionBarActivity {
 
     Handler mhandler;
     Handler mhandlerSend;
+    Handler mhandlerConn;
     private Context ctx;
 
     private Handler mMainHandler = new Handler() {
@@ -135,6 +139,27 @@ public class MainActivity extends ActionBarActivity {
         }
 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100 * 1000, 500, locationListener);
+
+        mhandlerConn = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                try {
+                    Log.i(TAG, "mhandlerCoon: msg=" + msg.what);
+                    if (msg.obj != null) {
+                        String s = msg.obj.toString();
+                        if (s.trim().length() > 0) {
+                            Log.i(TAG, "mhandler: obj=" + s);
+                            infoLog.append("Server:" + s);
+                        } else {
+                            Log.i(TAG, "no data");
+                        }
+                    }
+                } catch (Exception ee) {
+                    Log.i(TAG, "loading error");
+                    ee.printStackTrace();
+                }
+            }
+        };
 
         mhandler = new Handler() {
             @Override
@@ -208,10 +233,12 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
+        locationManager.addGpsStatusListener(statusListener);
+
     }
 
     public void startSocket() {
-        socketThread = new SocThread(mhandler, mhandlerSend, ctx);
+        socketThread = new SocThread(mhandler, mhandlerSend, mhandlerConn, ctx);
         socketThread.start();
     }
 
@@ -275,20 +302,8 @@ public class MainActivity extends ActionBarActivity {
         infoSend.setText(pData);
         totalC++;
         if(totalC>122) totalC = 65;
-        GpsStatus gpsStatus = locationManager.getGpsStatus(null);
 
-        Iterable<GpsSatellite> iterable=gpsStatus.getSatellites();
-        Iterator<GpsSatellite> itrator=iterable.iterator();
-        ArrayList<GpsSatellite> satelliteList=new ArrayList<GpsSatellite>();
-        int count=0;
-        int maxSatellites=gpsStatus.getMaxSatellites();
-        while (itrator.hasNext() && count <= maxSatellites) {
-            GpsSatellite satellite = itrator.next();
-            satelliteList.add(satellite);
-            count++;
-        }
-
-        String str = "imei: "+imei+"\nLatitude: "+lati+"\nLongitude: "+loit+"\nDate: "+ms+"\n# of S: "+count+"\nCell signal: "+""+"\nspeed: "+"";
+        String str = "imei: "+imei+"\nLatitude: "+lati+"\nLongitude: "+loit+"\nDate: "+ms+"\nGPS Status"+satelliteInfo+"\n# of S: "+numSal+"\nCell signal: "+""+"\nspeed: "+"";
         infoOut.setText(str);
 
         long nnn = Calendar.getInstance().getTimeInMillis();
@@ -296,5 +311,38 @@ public class MainActivity extends ActionBarActivity {
             sent = Calendar.getInstance().getTimeInMillis();
             mMainHandler.sendEmptyMessageDelayed(REFRESH_PROGRESS, 10000);
         }
+    }
+
+    /**
+     * Satellites Status Listener
+     */
+    private List<GpsSatellite> numSatelliteList = new ArrayList<GpsSatellite>(); // 卫星信号
+
+    private final GpsStatus.Listener statusListener = new GpsStatus.Listener() {
+        public void onGpsStatusChanged(int event) {
+            LocationManager locationManager = (LocationManager) MainActivity.this.getSystemService(Context.LOCATION_SERVICE);
+            GpsStatus status = locationManager.getGpsStatus(null);
+            satelliteInfo = updateGpsStatus(event, status);
+        }
+    };
+
+    private String updateGpsStatus(int event, GpsStatus status) {
+        StringBuilder sb2 = new StringBuilder("");
+        if (status == null) {
+            numSal = 0;
+        } else if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
+            int maxSatellites = status.getMaxSatellites();
+            Iterator<GpsSatellite> it = status.getSatellites().iterator();
+            numSatelliteList.clear();
+            int count = 0;
+            while (it.hasNext() && count <= maxSatellites) {
+                GpsSatellite s = it.next();
+                numSatelliteList.add(s);
+                count++;
+            }
+            numSal = numSatelliteList.size();
+        }
+
+        return sb2.toString();
     }
 }

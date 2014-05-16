@@ -28,13 +28,15 @@ public class SocThread extends Thread {
     public boolean isRun = true;
     Handler inHandler;
     Handler outHandler;
+    Handler connHandler;
     Context ctx;
     private String TAG1 = "===Send===";
     SharedPreferences sp;
 
-    public SocThread(Handler handlerin, Handler handlerout, Context context) {
+    public SocThread(Handler handlerin, Handler handlerout, Handler handlerconn, Context context) {
         inHandler = handlerin;
         outHandler = handlerout;
+        connHandler = handlerconn;
         ctx = context;
         Log.i(TAG, "create socket thread");
     }
@@ -44,6 +46,7 @@ public class SocThread extends Thread {
      */
     public void conn() {
 
+        Message msg = connHandler.obtainMessage();
         try {
             initdate();
             Log.i(TAG, "connect……");
@@ -55,15 +58,29 @@ public class SocThread extends Thread {
             out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
                     client.getOutputStream())), true);
             Log.i(TAG, "Output stream created ");
+            msg.obj = "connect success";
+            msg.what = 1;
+            connHandler.sendMessage(msg);
         } catch (UnknownHostException e) {
             Log.i(TAG, "Connect error: UnknownHostException");
             e.printStackTrace();
+            msg.obj = "Connect error: UnknownHostException";
+            msg.what = 1;
+            connHandler.sendMessage(msg);
             conn();
         } catch (IOException e) {
             Log.i(TAG, "Connect io error");
+
+            msg.obj = "Connect io error";
+            msg.what = 1;
+            connHandler.sendMessage(msg);
             e.printStackTrace();
         } catch (Exception e) {
             Log.i(TAG, "Connect error Exception" + e.getMessage());
+
+            msg.obj = "Connect error Exception" + e.getMessage();
+            msg.what = 1;
+            connHandler.sendMessage(msg);
             e.printStackTrace();
         }
     }
@@ -72,6 +89,7 @@ public class SocThread extends Thread {
         sp = ctx.getSharedPreferences("SP", ctx.MODE_PRIVATE);
         ip = sp.getString("ipstr", ip);
         port = Integer.parseInt(sp.getString("port", String.valueOf(port)));
+
         Log.i(TAG, "get ip port:" + ip + ";" + port);
     }
 
