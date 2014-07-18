@@ -7,8 +7,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="C:\andriodProjects\ITT" />
-            <option value="C:\andriodProjects\ITT\ITT" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/ITT" />
           </set>
         </option>
       </GradleProjectSettings>
