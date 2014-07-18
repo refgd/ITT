@@ -12,6 +12,7 @@ import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
@@ -102,28 +103,45 @@ public class MainActivity extends ActionBarActivity {
         infoLog = (TextView) findViewById(R.id.textView);
         autoSend = (Switch) findViewById(R.id.autoSend);
 
+        Log.d("DEBUG","Start");
+
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         TelephonyManager mngr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
         imei = mngr.getDeviceId();
 
-        boolean enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        //boolean enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+        // getting GPS status
+        boolean isGPSEnabled = locationManager
+                .isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+        // getting network status
+        boolean isNetworkEnabled = locationManager
+                .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
         // check if enabled and if not send user to the GSP settings
         // Better solution would be to display a dialog and suggesting to
         // go to the settings
-        if (!enabled) {
+        if (!isGPSEnabled && !isNetworkEnabled) {
             Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             startActivity(intent);
+        }
+
+        if (isNetworkEnabled) {
+            locationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER,
+                    100 * 1000, 500, locationListener);
+            Log.d("Network", "Network");
         }
 
         // Define the criteria how to select the locatioin provider -> use
         // default
         Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        criteria.setAltitudeRequired(false);
-        criteria.setBearingRequired(false);
-        criteria.setCostAllowed(true);
-        criteria.setPowerRequirement(Criteria.POWER_LOW);
+//        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+//        criteria.setAltitudeRequired(false);
+//        criteria.setBearingRequired(false);
+//        criteria.setCostAllowed(true);
+//        criteria.setPowerRequirement(Criteria.POWER_LOW);
 
         provider = locationManager.getBestProvider(criteria, false);
         Location location = locationManager.getLastKnownLocation(provider);
@@ -131,15 +149,24 @@ public class MainActivity extends ActionBarActivity {
         // Initialize the location fields
         if (location != null) {
             updateLocation(location);
-
-
-
         } else {
             infoOut.setText("Location not available");
         }
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100 * 1000, 500, locationListener);
+        //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100 * 1000, 500, locationListener);
 
+        // if GPS Enabled get lat/long using GPS Services
+        /*
+        if (isGPSEnabled) {
+            //if (location == null) {
+                locationManager.requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER,
+                        100 * 1000,
+                        500, locationListener);
+                Log.d("GPS Enabled", "GPS Enabled");
+            //}
+        }
+        */
         mhandlerConn = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -206,6 +233,8 @@ public class MainActivity extends ActionBarActivity {
         startSocket();
 
         Button btnsend = (Button) findViewById(R.id.btn_send);
+        Button btnopen = (Button) findViewById(R.id.btn_open);
+        Button btnopen2 = (Button) findViewById(R.id.btn_open2);
 
         btnsend.setOnClickListener(new Button.OnClickListener() {
             @Override
@@ -218,6 +247,22 @@ public class MainActivity extends ActionBarActivity {
 
                 socketThread.Send(str);
 
+            }
+        });
+
+        btnopen.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://50.195.116.150/"));
+                startActivity(intent);
+            }
+        });
+
+        btnopen2.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                Intent intent = new Intent(ctx, Web.class);
+                startActivity(intent);
             }
         });
 
